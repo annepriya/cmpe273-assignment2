@@ -16,11 +16,68 @@ import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
 public class ProcurementService extends Service<ProcurementServiceConfiguration> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+  
+	private static String queueName;
+    private static String topicName;
+    private static String user;
+    private static String password;
+    private static String host;
+    private static String port;
 
     /**
      * FIXME: THIS IS A HACK!
      */
     public static Client jerseyClient;
+    
+    
+    public static String getQueueName() {
+  		return queueName;
+  	}
+
+  	public static void setQueueName(String queueName) {
+  		ProcurementService.queueName = queueName;
+  	}
+
+  	public static String getTopicName() {
+  		return topicName;
+  	}
+
+  	public static void setTopicName(String topicName) {
+  		ProcurementService.topicName = topicName;
+  	}
+
+  	public static String getUser() {
+  		return user;
+  	}
+
+  	public static void setUser(String user) {
+  		ProcurementService.user = user;
+  	}
+
+  	public static String getPassword() {
+  		return password;
+  	}
+
+  	public static void setPassword(String password) {
+  		ProcurementService.password = password;
+  	}
+
+  	public static String getHost() {
+  		return host;
+  	}
+
+  	public static void setHost(String host) {
+  		ProcurementService.host = host;
+  	}
+
+  	public static String getPort() {
+  		return port;
+  	}
+
+  	public static void setPort(String port) {
+  		ProcurementService.port = port;
+  	}
+
 
     public static void main(String[] args) throws Exception {
 	new ProcurementService().run(args);
@@ -53,10 +110,23 @@ public class ProcurementService extends Service<ProcurementServiceConfiguration>
 	 */
 	environment.addResource(RootResource.class);
 
-	String queueName = configuration.getStompQueueName();
-	String topicName = configuration.getStompTopicPrefix();
+	 queueName = configuration.getStompQueueName();
+	 topicName = configuration.getStompTopicPrefix();
 	log.debug("Queue name is {}. Topic is {}", queueName, topicName);
 	// TODO: Apollo STOMP Broker URL and login
-
+  
+	 user=configuration.getApolloUser();
+	 password=configuration.getApolloPassword();
+	 host=configuration.getApolloHost();
+	 port=configuration.getApolloPort();
+	log.debug("{} - Apollo user name  is {}",
+			configuration.getStompQueueName(), user);
+	log.debug("{} - Apollo password   is {}",
+			configuration.getStompQueueName(), password);
+	
+	log.debug("{} - Apollo host name   is {}",
+			configuration.getStompQueueName(), host);
+	log.debug("{} - Apollo port   is {}",
+			configuration.getStompQueueName(), port);
     }
 }

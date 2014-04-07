@@ -4,6 +4,8 @@ package edu.sjsu.cmpe.procurement.domain;
 public class Book {
     private long isbn;
     private String title;
+    private String category;
+    private String coverimage;
 
     // add more fields here
 
@@ -14,7 +16,23 @@ public class Book {
 	return isbn;
     }
 
-    /**
+    public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getCoverimage() {
+		return coverimage;
+	}
+
+	public void setCoverimage(String coverimage) {
+		this.coverimage = coverimage;
+	}
+
+	/**
      * @param isbn
      *            the isbn to set
      */

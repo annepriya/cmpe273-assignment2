@@ -13,10 +13,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.jms.*;
 
 import com.yammer.dropwizard.jersey.params.LongParam;
 import com.yammer.metrics.annotation.Timed;
 
+import edu.sjsu.cmpe.library.Listener;
+import edu.sjsu.cmpe.library.config.LibraryServiceConfiguration;
 import edu.sjsu.cmpe.library.domain.Book;
 import edu.sjsu.cmpe.library.domain.Book.Status;
 import edu.sjsu.cmpe.library.dto.BookDto;
@@ -24,12 +27,31 @@ import edu.sjsu.cmpe.library.dto.BooksDto;
 import edu.sjsu.cmpe.library.dto.LinkDto;
 import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
 
+
+
+
+
+
+import org.eclipse.jetty.util.log.Log;
+//imports for Stomp and apollo
+import org.fusesource.stomp.jms.StompJmsConnectionFactory;
+import org.fusesource.stomp.jms.StompJmsDestination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 @Path("/v1/books")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class BookResource {
+	  private final Logger log = LoggerFactory.getLogger(getClass());
     /** bookRepository instance */
     private final BookRepositoryInterface bookRepository;
+    private Connection connection;
+    private String stompQueueName;
+    private String libraryName;
+    private String topic;
+  
 
     /**
      * BookResource constructor
@@ -37,8 +59,12 @@ public class BookResource {
      * @param bookRepository
      *            a BookRepository instance
      */
-    public BookResource(BookRepositoryInterface bookRepository) {
+    public BookResource(BookRepositoryInterface bookRepository,Connection conn,String queue,String library,String topicQueue) {
 	this.bookRepository = bookRepository;
+	this.connection=conn;
+	this.stompQueueName=queue;
+	this.libraryName=library;
+	this.topic=topicQueue;
     }
 
     @GET
@@ -55,6 +81,8 @@ public class BookResource {
 
 	return bookResponse;
     }
+    
+    
 
     @POST
     @Timed(name = "create-book")
@@ -80,15 +108,41 @@ public class BookResource {
 
 	return booksResponse;
     }
+    
+   
 
     @PUT
     @Path("/{isbn}")
-    @Timed(name = "update-book-status")
+    @Timed(name = "update-book")
     public Response updateBookStatus(@PathParam("isbn") LongParam isbn,
-	    @DefaultValue("available") @QueryParam("status") Status status) {
+	    @DefaultValue("available") @QueryParam("status") Status status)throws JMSException {
+    	System.out.println("inside update status");	
 	Book book = bookRepository.getBookByISBN(isbn.get());
+	if(status==Status.lost){
+		
+        
+        
+     // Create a Session
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+     // Create the destination (Topic or Queue)
+        Destination destination = new StompJmsDestination(stompQueueName);
+        
+        MessageProducer producer = session.createProducer(destination);
+        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        long isbnValue=isbn.get();
+        String text=libraryName+":"+isbnValue;
+        TextMessage message = session.createTextMessage(text);
+        
+     // Tell the producer to send the message
+        System.out.println("Sent message: "+ message.hashCode() + " : " + Thread.currentThread().getName());
+        producer.send(message);
+        System.out.println("sending message to the queue"+stompQueueName);
+        //close the session
+        /*session.close();
+        connection.close();*/
+		
+	}
 	book.setStatus(status);
-
 	BookDto bookResponse = new BookDto(book);
 	String location = "/books/" + book.getIsbn();
 	bookResponse.addLink(new LinkDto("view-book", location, "GET"));

@@ -68,8 +68,14 @@ public class BookRepository implements BookRepositoryInterface {
     public Book saveBook(Book newBook) {
 	checkNotNull(newBook, "newBook instance must not be null");
 	// Generate new ISBN
-	Long isbn = generateISBNKey();
+	Long isbn =null;
+	if(!(newBook.getIsbn()>0)){
+
+	 isbn = generateISBNKey();
 	newBook.setIsbn(isbn);
+	}else{
+		isbn=newBook.getIsbn();
+	}
 	// TODO: create and associate other fields such as author
 
 	// Finally, save the new book into the map
