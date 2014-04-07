@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.ExceptionListener;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -18,7 +17,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.ws.rs.core.MediaType;
 
-import org.eclipse.jetty.util.ajax.JSON;
+
 import org.fusesource.stomp.jms.StompJmsConnectionFactory;
 import org.fusesource.stomp.jms.StompJmsDestination;
 import org.fusesource.stomp.jms.message.StompJmsMessage;
@@ -34,7 +33,6 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import de.spinscale.dropwizard.jobs.Job;
 import de.spinscale.dropwizard.jobs.annotations.Every;
 import edu.sjsu.cmpe.procurement.ProcurementService;
-import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
 import edu.sjsu.cmpe.procurement.domain.Book;
 import edu.sjsu.cmpe.procurement.domain.ShippedBooks;
 
@@ -44,9 +42,8 @@ import edu.sjsu.cmpe.procurement.domain.ShippedBooks;
 @Every("45s")
 public class ProcurementSchedulerJob extends Job {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private ArrayList<String> bookRequests;
     private static ArrayList<String>  isbnList=new ArrayList<String>();
-    private HashMap bookResponse=new HashMap();
+   
     final String publisherEndPointUri="http://54.215.133.131:9000/orders";
     final String orderShipmentUri="http://54.215.133.131:9000/orders/38622";
     private Client client;
@@ -57,8 +54,7 @@ public class ProcurementSchedulerJob extends Job {
  	private int port = Integer.parseInt(env("APOLLO_PORT", "61613"));
  	private String queue = "/queue/38622.book.orders";
  	private String topic="/topic/38622.book.";
- 	private String topicLibraryA="/topic/38622.book.*";
- 	private String topicLibraryB="/topic/38622.book.computer";
+ 	
  	private String[] messageToPublish;
     @Override
     public void doJob() {
@@ -105,7 +101,6 @@ public class ProcurementSchedulerJob extends Job {
             Message msg = consumer.receive(waitUntil);
             if( msg instanceof  TextMessage ) {
                    String body = ((TextMessage) msg).getText();
-                   //bookRequests.add(body);
                    parseIsbnFromRequest(body);
                    System.out.println("Received message = " + body);
                   
@@ -203,7 +198,6 @@ public class ProcurementSchedulerJob extends Job {
 	   
     	ClientResponse response = resource.accept( MediaType.APPLICATION_JSON )
     	        .type( MediaType.APPLICATION_JSON )
-    	       // .entity(isbnList,MediaType.APPLICATION_JSON_TYPE)
     	        .entity(request)
     	        .post( ClientResponse.class );
     	System.out.println("response recieved from publisher"+response.getStatus());
@@ -218,7 +212,6 @@ public class ProcurementSchedulerJob extends Job {
     	 WebResource order = client.resource(orderShipmentUri );
     	ShippedBooks books = order.accept("application/json" )
     	        .type("application/json" )
-    	       // .entity(isbnList,MediaType.APPLICATION_JSON_TYPE)
     	        .get( ShippedBooks.class );
     	System.out.println("response recieved from publisher"+books);
     	return books;
@@ -240,8 +233,7 @@ public class ProcurementSchedulerJob extends Job {
 		
 		
 		StompJmsConnectionFactory connectionFactory =new StompJmsConnectionFactory();
-    	//int port=Integer.parseInt(proConfig.getApolloPort());
-    	connectionFactory.setBrokerURI("tcp://" + host + ":" + port);
+        connectionFactory.setBrokerURI("tcp://" + host + ":" + port);
     
     	Connection connection = connectionFactory.createConnection(user, password);
         connection.start();
