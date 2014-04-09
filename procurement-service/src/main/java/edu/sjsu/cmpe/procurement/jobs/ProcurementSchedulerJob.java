@@ -56,6 +56,8 @@ public class ProcurementSchedulerJob extends Job {
  	private String topic="/topic/38622.book.";
  	
  	private String[] messageToPublish;
+ 	Connection connection;
+ 	
     @Override
     public void doJob() {
 	String strResponse = ProcurementService.jerseyClient.resource(
@@ -66,6 +68,7 @@ public class ProcurementSchedulerJob extends Job {
     	clientConfig.getProperties().put(ClientConfig.PROPERTY_FOLLOW_REDIRECTS, true);
 	    client = Client.create(clientConfig);
 		pullMessageFromQueue();
+		connection.close();
 	} catch (JMSException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -82,7 +85,7 @@ public class ProcurementSchedulerJob extends Job {
     	//int port=Integer.parseInt(proConfig.getApolloPort());
     	connectionFactory.setBrokerURI("tcp://" + host + ":" + port);
     
-    	Connection connection = connectionFactory.createConnection(user, password);
+        connection = connectionFactory.createConnection(user, password);
     	connection.start();
     	
     	//connection.setExceptionListener(this);
@@ -123,7 +126,7 @@ public class ProcurementSchedulerJob extends Job {
         
         if(isbnList.size()>0){
         sendBookRequestsToPublisher();
-        }
+      
         ShippedBooks response=receiveShippedBooksFromPublisher();
         generateMessageForPublishing(response);
         System.out.println(response);
@@ -131,8 +134,8 @@ public class ProcurementSchedulerJob extends Job {
         Connection conn=createStompConnection();
         startPublishing(conn);
         
-        
-        connection.close();
+        }
+     
         System.out.println("Done");
 
     	
