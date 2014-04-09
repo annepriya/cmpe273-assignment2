@@ -83,15 +83,11 @@ public class Listener implements Runnable {
 					}
 					System.out.println("Received message = " + body);
 					
-						
-				
-					//connection.close();
-
 				    } else {
 					System.out.println("Unexpected message type: "+msg.getClass());
 				    }
 			} 
-			
+			    session.close();
 				connection.close();
 			}catch (JMSException e) {
 				// TODO Auto-generated catch block

@@ -88,8 +88,8 @@ public class LibraryService extends Service<LibraryServiceConfiguration> {
 	/** UI Resources */
 	environment.addResource(new HomeResource(bookRepository));
 	
-   int num_of_threads = 2;
-	ExecutorService execute = Executors.newFixedThreadPool(num_of_threads);
+   int numOfThreads = 2;
+	ExecutorService execute = Executors.newFixedThreadPool(numOfThreads);
 	
 	
 	Runnable listener=new Listener(bookRepository, topicName, connection); 

@@ -137,9 +137,7 @@ public class BookResource {
         System.out.println("Sent message: "+ message.hashCode() + " : " + Thread.currentThread().getName());
         producer.send(message);
         System.out.println("sending message to the queue"+stompQueueName);
-        //close the session
-        /*session.close();
-        connection.close();*/
+       
 		
 	}
 	book.setStatus(status);

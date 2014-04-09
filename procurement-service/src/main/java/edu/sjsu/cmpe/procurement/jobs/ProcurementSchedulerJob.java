@@ -39,7 +39,7 @@ import edu.sjsu.cmpe.procurement.domain.ShippedBooks;
 /**
  * This job will run at every 5 second.
  */
-@Every("45s")
+@Every("300s")
 public class ProcurementSchedulerJob extends Job {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private static ArrayList<String>  isbnList=new ArrayList<String>();
